@@ -143,7 +143,9 @@ function loadTreeTuningChip(perspectiveField = null) {
 test('tree row renders the tuning chip (feedBack#987)', () => {
     const src = fs.readFileSync(SONGS_JS, 'utf8');
     const row = extractBlock(src, 'function treeSongRowHtml(');
-    assert.match(row, /treeTuningChipHtml\(s\)/);
+    assert.match(row, /const tuningChip = treeTuningChipHtml\(s\);/);
+    // ...and the chip is actually concatenated into the returned markup.
+    assert.match(row, /\+\s*tuningChip\s*\+/);
 });
 
 test('tree tuning chip shows the named tuning', () => {
