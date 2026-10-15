@@ -572,6 +572,7 @@
         _test: {
             categoryOf: categoryOf, thumbUrl: thumbUrl, settingsTarget: settingsTarget,
             findSettingsPanel: findSettingsPanel, showSettingsTabFor: showSettingsTabFor,
+            openPluginSettings: openPluginSettings,
             clampToBoard: clampToBoard, defaultSlot: defaultSlot,
             loadLayout: loadLayout, saveLayout: saveLayout,
             frameFor: frameFor, pickFrame: pickFrame, frameUrl: frameUrl,

@@ -209,3 +209,51 @@ test('showSettingsTabFor: no-op outside a tab panel (classic settings page)', ()
     t.showSettingsTabFor(null);
     assert.deepEqual(dom.clicks, []);
 });
+
+// Drive the handler the pedal's click/keydown calls, so the test fails if
+// openSettingsPanel ever stops bringing the panel's tab to the front.
+function fakePedalDom() {
+    const events = [];
+    const details = (id, tab) => {
+        const d = {
+            getAttribute: (k) => (k === 'data-plugin-id' ? id : null),
+            closest: (sel) => (sel === '.fb-tabpanel' ? { dataset: { tab } } : null),
+            scrollIntoView: () => events.push('scroll:' + id),
+        };
+        Object.defineProperty(d, 'open', { set: (v) => events.push('open:' + id + '=' + v) });
+        return d;
+    };
+    const all = [details('tuner', 'plugins'), details('highway_3d', 'graphics')];
+    const tabs = ['gameplay', 'graphics', 'plugins'].map((tab) => ({
+        dataset: { tab }, click: () => events.push('tab:' + tab),
+    }));
+    const doc = {
+        getElementById: () => null,
+        querySelectorAll: (sel) => {
+            if (sel.indexOf('details[data-plugin-id]') !== -1) return all;
+            if (sel === '#settings-tabbar .fb-tab') return tabs;
+            return [];
+        },
+    };
+    return { doc, events };
+}
+
+test('pedal activation: settings-only plugin selects its inactive tab before opening', () => {
+    const dom = fakePedalDom();
+    const { t, win } = loadPage({ doc: dom.doc });
+    win.showScreen = (id) => dom.events.push('screen:' + id);
+    t.openPluginSettings({ id: 'highway_3d', has_settings: true });
+    assert.deepEqual(dom.events, [
+        'screen:settings', 'tab:graphics', 'open:highway_3d=true', 'scroll:highway_3d',
+    ]);
+});
+
+test('pedal activation: unmounted screen falls back to the settings panel in its tab', () => {
+    const dom = fakePedalDom();
+    const { t, win } = loadPage({ doc: dom.doc });
+    win.showScreen = (id) => dom.events.push('screen:' + id);
+    t.openPluginSettings({ id: 'highway_3d', has_screen: true, has_settings: true });
+    assert.deepEqual(dom.events, [
+        'screen:settings', 'tab:graphics', 'open:highway_3d=true', 'scroll:highway_3d',
+    ]);
+});
