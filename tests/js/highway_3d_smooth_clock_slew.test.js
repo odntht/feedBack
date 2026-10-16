@@ -141,6 +141,16 @@ test('smoothNow stays monotonic through main-thread stalls (bunched samples)', (
     }
 });
 
+test('smoothNow snaps after a frame gap longer than 250 ms', () => {
+    const f = simulate({ secs: 3, events: { stallEveryMs: 1009, stallMs: 300 } });
+    const gaps = f.map((x, n) => n).filter((n) => n > 0 && f[n].playing && f[n].w - f[n - 1].w > 250);
+    assert.ok(gaps.length > 0, 'simulation must create a frame gap above 250 ms');
+    for (const i of gaps) {
+        assert.equal(f[i].t, f[i].raw, 'the first frame after a long gap snaps to the current sample');
+        assert.ok(Math.abs(f[i].truth - f[i].t) < 0.03, `|truth - smoothNow| = ${((f[i].truth - f[i].t) * 1000).toFixed(1)} ms`);
+    }
+});
+
 test('smoothNow follows an already-smooth bundle clock closely (core interpolates per frame)', () => {
     const f = simulate({ host: 'perFrame' }).filter((x) => x.w > 1000 && x.playing);
     const maxDiff = Math.max(...f.map((x) => Math.abs(x.t - x.raw)));
