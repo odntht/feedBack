@@ -72,5 +72,7 @@ test('render-scale drop reaches the composer, steady frames do no work', () => {
     state._appliedW = 1000.5; state._appliedH = 600.4;   // fractional CSS box
     frame(comp, ren, state);
     frame(comp, ren, state);
-    assert.deepEqual(calls, [['size', 1000, 600]], 'fractional sizes resize once, not every frame');
+    // Same CSS size the renderer got, unrounded, so the composer's targets
+    // truncate after the pixel-ratio multiply exactly like the drawing buffer.
+    assert.deepEqual(calls, [['size', 1000.5, 600.4]], 'fractional sizes resize once, not every frame');
 });

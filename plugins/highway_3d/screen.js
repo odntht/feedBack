@@ -16426,7 +16426,10 @@
                         // rather than a per-frame layout read of the canvas box.
                         const bpr = ren.getPixelRatio();
                         if (bpr !== _bloomPR) { comp.setPixelRatio(bpr); _bloomPR = bpr; }
-                        const bw = _appliedW | 0, bh = _appliedH | 0;
+                        // Pass the same (possibly fractional) CSS size applySize()
+                        // gave the renderer, so both multiply by the pixel ratio
+                        // before truncating and the targets match the drawing buffer.
+                        const bw = _appliedW, bh = _appliedH;
                         if (bw > 0 && bh > 0 && (bw !== _bloomW || bh !== _bloomH)) {
                             comp.setSize(bw, bh); _bloomW = bw; _bloomH = bh;
                         }
